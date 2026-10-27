@@ -107,7 +107,12 @@ section.view{display:grid;gap:20px;margin-top:20px}
 .ing .n{font-weight:600;font-size:14px;line-height:1.3;word-break:keep-all}
 .ing .s{font-size:11px;color:var(--muted)}
 .ing .have{position:absolute;top:6px;right:6px;font-size:10px;font-weight:600;background:var(--accent);color:var(--accent-ink);border-radius:999px;min-width:18px;height:18px;display:grid;place-items:center;padding:0 4px}
-.ing.custom{border-style:dashed}
+.ing.custom{border-style:dashed;color:var(--muted)}
+.ing.mine{border-color:var(--accent);border-style:solid;background:var(--accent-soft)}
+.sheet .chips .chip{padding:6px 11px}
+.ingw{position:relative;display:grid;min-width:0}
+.minus{position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:16px;line-height:1;display:grid;place-items:center;padding:0}
+.minus:hover{color:var(--over);border-color:var(--over)}
 .ing.pop{animation:pop .35s ease}
 @keyframes pop{40%{transform:scale(.94);background:var(--accent-soft)}}
 
@@ -420,34 +425,90 @@ function loadSample(){
 // ---------- add view ----------
 function modeHTML(){return `<div class="seg two" role="group" aria-label="담기 방식"><button data-mode="ing" aria-pressed="${addMode==="ing"}">재료 담기</button><button data-mode="menu" aria-pressed="${addMode==="menu"}">반찬 신청</button></div>`}
 function bindMode(v){v.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{addMode=b.dataset.mode;renderAdd()})}
+const myIngs=()=>Array.isArray(state.custom)?state.custom:[];
+const allIngs=()=>INGS.concat(myIngs());
+const ingById=k=>ING[k]||myIngs().find(c=>c.id===k);
+const daysTxt=d=>d>=60?Math.round(d/30)+"개월":d+"일";
+function ingBtn(i,counts){return `<div class="ingw"><button class="ing ${i.id.startsWith("c_")?"mine":""}" data-k="${i.id}">${counts[i.id]?`<span class="have">${counts[i.id]}</span>`:""}<span class="n">${esc(i.name)}</span><span class="s">${i.store==="냉장"?"":i.store+" · "}${daysTxt(i.days)}</span></button>${counts[i.id]?`<button class="minus" data-minus="${i.id}" aria-label="${esc(i.name)} 하나 빼기">−</button>`:""}</div>`}
 function renderAdd(){
   if(addMode==="menu"){renderMenu();return}
   const v=$("#v-add");
   const counts={};state.items.forEach(i=>{if(i.key)counts[i.key]=(counts[i.key]||0)+1});
   const q=addQuery.trim();
-  const pool=q?INGS.filter(i=>i.name.includes(q)):INGS.filter(i=>i.cat===addCat);
+  const mine=myIngs();
+  if(addCat==="mine"&&!mine.length)addCat="veg";
+  const catList=CATS.concat(mine.some(c=>c.cat==="etc")?[["etc","기타"]]:[]).concat(mine.length?[["mine","내 재료"]]:[]);
+  const pool=q?allIngs().filter(i=>i.name.includes(q)):addCat==="mine"?mine:allIngs().filter(i=>i.cat===addCat);
   const B=[[0,"오늘"],[1,"어제"],[3,"2~3일 전"],[7,"일주일 전"]];
+  let grid=pool.map(i=>ingBtn(i,counts)).join("");
+  if(q&&!allIngs().some(i=>i.name===q))grid+=`<button class="ing custom" id="custom"><span class="n">‘${esc(q)}’</span><span class="s">새 버튼 만들기</span></button>`;
+  if(!q)grid+=`<button class="ing custom" id="newIng"><span class="n">+ 새 재료</span><span class="s">버튼 만들기</span></button>`;
   v.innerHTML=modeHTML()+`
     <div class="field"><span class="lbl">언제 샀어요?</span><div class="chips">${B.map(([n,l])=>`<button class="chip" data-b="${n}" aria-pressed="${boughtOffset===n}">${l}</button>`).join("")}</div></div>
     <div class="field"><label for="q">찾기 또는 직접 입력</label><input id="q" class="search" type="search" placeholder="예: 양파, 닭다리, 연어" value="${esc(addQuery)}" autocomplete="off"></div>
-    ${q?"":`<div class="chips" role="group" aria-label="분류">${CATS.map(([k,l])=>`<button class="chip" data-c="${k}" aria-pressed="${addCat===k}">${l}</button>`).join("")}</div>`}
-    <div class="grid">${pool.map(i=>`<button class="ing" data-k="${i.id}">${counts[i.id]?`<span class="have">${counts[i.id]}</span>`:""}<span class="n">${esc(i.name)}</span><span class="s">${i.store==="냉장"?"":i.store+" · "}${i.days>=60?Math.round(i.days/30)+"개월":i.days+"일"}</span></button>`).join("")}
-      ${q&&!INGS.some(i=>i.name===q)?`<button class="ing custom" id="custom"><span class="n">‘${esc(q)}’</span><span class="s">직접 추가 · 7일</span></button>`:""}</div>
-    <p class="note">누르면 바로 담겨요. 기한은 보통 보관 기준이라, 냉장고 탭에서 눌러 바꿀 수 있어요.</p>`;
+    ${q?"":`<div class="chips" role="group" aria-label="분류">${catList.map(([k,l])=>`<button class="chip" data-c="${k}" aria-pressed="${addCat===k}">${l}</button>`).join("")}</div>`}
+    <div class="grid">${grid}</div>
+    ${!q&&addCat==="mine"?`<div><div class="sec-h"><h2>내가 만든 버튼</h2><small>${mine.length}개</small></div><div class="list">${mine.map(c=>`<div class="row" style="cursor:default"><div style="min-width:0"><div class="nm">${esc(c.name)}</div><div class="meta">${esc((CATS.find(x=>x[0]===c.cat)||["","기타"])[1])} · ${c.store} · 기한 ${daysTxt(c.days)}</div></div><span style="display:flex;gap:6px"><button class="btn line" style="padding:6px 10px;font-size:13px" data-editc="${c.id}">수정</button><button class="btn danger" style="padding:6px 10px;font-size:13px" data-delc="${c.id}">지우기</button></span></div>`).join("")}</div><p class="note">버튼을 지워도 이미 냉장고에 담긴 재료는 그대로 있어요.</p></div>`:""}
+    <p class="note">누르면 바로 담기고, 왼쪽 위 − 를 누르면 하나씩 빠져요. 목록에 없는 재료는 ‘+ 새 재료’로 버튼을 만들어 두면 다음부터 한 번에 담을 수 있어요.</p>`;
   bindMode(v);
   v.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>{boughtOffset=+b.dataset.b;renderAdd()});
   v.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{addCat=b.dataset.c;renderAdd()});
   const qi=v.querySelector("#q");
   qi.oninput=()=>{addQuery=qi.value;const pos=qi.selectionStart;renderAdd();const n=$("#q");n.focus();try{n.setSelectionRange(pos,pos)}catch(e){}};
   qi.onkeydown=e=>{if(e.key==="Enter"){const c=$("#custom")||v.querySelector(".ing");if(c)c.click()}};
+  v.querySelectorAll("[data-minus]").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.minus;let idx=-1;state.items.forEach((x,j)=>{if(x.key===k)idx=j});if(idx<0)return;
+    const [it]=state.items.splice(idx,1);commit();
+    toast(`${it.name} 하나 뺐어요`,()=>{state.items.splice(Math.min(idx,state.items.length),0,it);commit()});
+  });
   v.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
-    const ing=ING[b.dataset.k];const it=addItem(ing,boughtOffset);commit();
+    const ing=ingById(b.dataset.k);if(!ing)return;const it=addItem(ing,boughtOffset);commit();
     const nb=document.querySelector(`#v-add [data-k="${ing.id}"]`);if(nb)nb.classList.add("pop");
     toast(`${ing.name} 담음 · ${md(it.expires)}까지`,()=>{state.items=state.items.filter(x=>x.id!==it.id);commit()});
   });
-  const c=v.querySelector("#custom");
-  if(c)c.onclick=()=>{const key=matchKey(q);const it=addItem({id:key,name:q,cat:key?ING[key].cat:"etc",days:7,store:"냉장"},boughtOffset);addQuery="";commit();
-    toast(`${q} 담음 · 기한 7일로 잡았어요`,()=>{state.items=state.items.filter(x=>x.id!==it.id);commit()})};
+  const c=v.querySelector("#custom");if(c)c.onclick=()=>openIngSheet({name:q});
+  const n=v.querySelector("#newIng");if(n)n.onclick=()=>openIngSheet({cat:addCat==="mine"?"veg":addCat});
+  v.querySelectorAll("[data-editc]").forEach(b=>b.onclick=()=>openIngSheet(myIngs().find(x=>x.id===b.dataset.editc)));
+  v.querySelectorAll("[data-delc]").forEach(b=>{let armed=false;b.onclick=()=>{if(!armed){armed=true;b.textContent="한 번 더";return}
+    const id=b.dataset.delc;const idx=myIngs().findIndex(x=>x.id===id);const [gone]=state.custom.splice(idx,1);commit();
+    toast(`‘${gone.name}’ 버튼을 지웠어요`,()=>{state.custom.splice(idx,0,gone);commit()})}});
+}
+function openIngSheet(pre){
+  pre=pre||{};const editing=!!pre.id;
+  const guess=pre.name?matchKey(pre.name):null;
+  const d={name:pre.name||"",cat:pre.cat||(guess?ING[guess].cat:(addCat==="mine"?"veg":addCat)),days:pre.days||(guess?ING[guess].days:7),store:pre.store||(guess?ING[guess].store:"냉장")};
+  const root=$("#sheetRoot");
+  const CATX=CATS.concat([["etc","기타"]]);const DAYS=[2,3,5,7,14,30,90,180];
+  const draw=()=>{
+    root.innerHTML=`<div class="scrim" id="scrim"><form class="sheet" role="dialog" aria-modal="true" aria-labelledby="ni-t" id="niForm">
+      <h2 id="ni-t">${editing?"재료 버튼 수정":"새 재료 버튼"}</h2>
+      <div class="field"><label for="ni-name">이름</label><input type="text" id="ni-name" value="${esc(d.name)}" placeholder="예: 연어, 닭다리, 체다치즈" required maxlength="20"></div>
+      <div class="field"><span class="lbl">분류</span><div class="chips">${CATX.map(([k,l])=>`<button type="button" class="chip" data-nc="${k}" aria-pressed="${d.cat===k}">${l}</button>`).join("")}</div></div>
+      <div class="field"><span class="lbl">보통 며칠 가요? (소비기한 기본값)</span><div class="chips">${DAYS.map(n=>`<button type="button" class="chip" data-nd="${n}" aria-pressed="${d.days===n}">${daysTxt(n)}</button>`).join("")}</div></div>
+      <div class="field"><span class="lbl">보관</span><div class="seg">${["냉장","냉동","실온"].map(s=>`<button type="button" data-ns="${s}" aria-pressed="${d.store===s}">${s}</button>`).join("")}</div></div>
+      <button class="btn" type="submit">${editing?"저장":"버튼 만들고 담기"}</button>
+      ${editing?"":`<button class="linkbtn" type="button" id="ni-only">버튼만 만들기 (지금은 안 담기)</button>`}
+    </form></div>`;
+    const nm=$("#ni-name");nm.oninput=()=>{d.name=nm.value};
+    root.querySelectorAll("[data-nc]").forEach(b=>b.onclick=()=>{d.cat=b.dataset.nc;draw()});
+    root.querySelectorAll("[data-nd]").forEach(b=>b.onclick=()=>{d.days=+b.dataset.nd;draw()});
+    root.querySelectorAll("[data-ns]").forEach(b=>b.onclick=()=>{d.store=b.dataset.ns;draw()});
+    $("#scrim").onclick=e=>{if(e.target.id==="scrim")close()};
+    const save=put=>{const name=d.name.trim();if(!name){nm.focus();return}
+      if(!editing&&allIngs().some(i=>i.name===name)){toast(`‘${name}’ 버튼은 이미 있어요`);return}
+      if(!Array.isArray(state.custom))state.custom=[];
+      let ing;
+      if(editing){ing=state.custom.find(x=>x.id===pre.id);Object.assign(ing,{name,cat:d.cat,days:d.days,store:d.store})}
+      else{ing={id:"c_"+uidGen(),name,cat:d.cat,days:d.days,store:d.store};state.custom.push(ing)}
+      addQuery="";if(!editing)addCat=d.cat;close();
+      if(put){const it=addItem(ing,boughtOffset);commit();toast(`‘${name}’ 버튼을 만들고 담았어요`,()=>{state.items=state.items.filter(x=>x.id!==it.id);commit()})}
+      else{commit();toast(editing?"버튼을 수정했어요":`‘${name}’ 버튼을 만들었어요`)}};
+    $("#niForm").onsubmit=e=>{e.preventDefault();save(!editing)};
+    const only=$("#ni-only");if(only)only.onclick=()=>save(false);
+  };
+  const onKey=e=>{if(e.key==="Escape")close()};
+  const close=()=>{root.innerHTML="";document.removeEventListener("keydown",onKey)};
+  document.addEventListener("keydown",onKey);draw();setTimeout(()=>{const n=$("#ni-name");if(n&&!n.value)n.focus()},0);
 }
 
 
@@ -585,7 +646,7 @@ function weight(it){const d=left(it),a=age(it);let w=d<=1?10:d===2?7:d===3?5:d<=
 function recommend(){
   const avail=state.items.filter(i=>left(i)>=0);
   const best={};
-  for(const it of avail){if(it.kind==="banchan")continue;const k=it.key||matchKey(it.name);if(!k)continue;if(!best[k]||left(it)<left(best[k]))best[k]=it}
+  for(const it of avail){if(it.kind==="banchan")continue;let k=it.key||matchKey(it.name);if(k&&k.startsWith("c_"))k=matchKey(it.name);if(!k)continue;if(!best[k]||left(it)<left(best[k]))best[k]=it}
   const pick=g=>{let b=null;for(const k of g){const it=best[k];if(it&&(!b||left(it)<left(b)))b=it}return b};
   const full=[],near=[];
   for(const r of RECIPES){
@@ -693,7 +754,7 @@ function openSheet(id){
     root.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{sync();const was=draft.store;draft.store=b.dataset.s;
       if(was!=="냉동"&&draft.store==="냉동"){const base=left(draft)<0?todayStr():draft.expires;draft.expires=addDays(base,30)}draw()});
     $("#f-e").onchange=()=>{sync();draw()};
-    $("#save").onclick=()=>{sync();Object.assign(it,draft);if(it.kind!=="banchan"){const k=matchKey(it.name);if(k)it.key=k}close();commit();toast("저장했어요")};
+    $("#save").onclick=()=>{sync();Object.assign(it,draft);if(it.kind!=="banchan"&&!(it.key||"").startsWith("c_")){const k=matchKey(it.name);if(k)it.key=k}close();commit();toast("저장했어요")};
     const out=kind=>{const snap=JSON.parse(JSON.stringify(state));state.items=state.items.filter(i=>i.id!==id);if(kind)logOut(kind);close();commit();
       toast(kind==="eaten"?`${it.name} 다 먹음`:kind==="tossed"?`${it.name} 버림`:`${it.name} 삭제`,()=>{state=snap;commit()})};
     $("#ate").onclick=()=>out("eaten");$("#toss").onclick=()=>out("tossed");$("#del").onclick=()=>out(null);
