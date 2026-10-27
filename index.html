@@ -164,6 +164,14 @@ nav.tabs button[aria-current="page"] span{font-weight:700}
 
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:13px;padding:10px 14px;border-radius:12px;z-index:50;max-width:calc(100% - 32px);display:flex;gap:12px;align-items:center}
 .toast button{background:none;border:0;color:inherit;text-decoration:underline;padding:0;font-size:13px;white-space:nowrap}
+.editbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--soon-soft);color:var(--soon);border-radius:12px;padding:10px 12px;font-size:13px}
+.editbar .btn{padding:7px 14px}
+.gridhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:-8px}
+.gridhead .linkbtn{text-decoration:none;color:var(--accent);font-weight:600}
+.ing.editing{border-style:dashed}
+.ing.hid{opacity:.5}
+.ing .pen{position:absolute;top:6px;right:8px;font-size:12px;color:var(--soon)}
+.opt .k{font-size:15px}
 /* banchan menu */
 .seg.two{grid-template-columns:1fr 1fr}
 .upl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
@@ -423,36 +431,49 @@ function loadSample(){
 }
 
 // ---------- add view ----------
-function modeHTML(){return `<div class="seg two" role="group" aria-label="담기 방식"><button data-mode="ing" aria-pressed="${addMode==="ing"}">재료 담기</button><button data-mode="menu" aria-pressed="${addMode==="menu"}">반찬 신청</button></div>`}
+const CLAUDE_RT=!!(window.claude&&window.claude.use);
+function modeHTML(){return `<div class="seg" role="group" aria-label="담기 방식"><button data-mode="ing" aria-pressed="${addMode==="ing"}">재료 담기</button><button data-mode="rcpt" aria-pressed="${addMode==="rcpt"}">영수증</button><button data-mode="menu" aria-pressed="${addMode==="menu"}">반찬 신청</button></div>`}
 function bindMode(v){v.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{addMode=b.dataset.mode;renderAdd()})}
+
+// ---------- ingredient catalog (built-in + mine + overrides) ----------
+let editMode=false;
 const myIngs=()=>Array.isArray(state.custom)?state.custom:[];
-const allIngs=()=>INGS.concat(myIngs());
-const ingById=k=>ING[k]||myIngs().find(c=>c.id===k);
+const overrides=()=>state.overrides&&typeof state.overrides==="object"?state.overrides:{};
+const hiddenSet=()=>new Set(Array.isArray(state.hidden)?state.hidden:[]);
+const withOv=i=>{const o=overrides()[i.id];return o?{...i,...o,base:{days:i.days,store:i.store}}:i};
+const allIngs=()=>INGS.map(withOv).concat(myIngs());
+const ingById=k=>ING[k]?withOv(ING[k]):myIngs().find(c=>c.id===k);
 const daysTxt=d=>d>=60?Math.round(d/30)+"개월":d+"일";
-function ingBtn(i,counts){return `<div class="ingw"><button class="ing ${i.id.startsWith("c_")?"mine":""}" data-k="${i.id}">${counts[i.id]?`<span class="have">${counts[i.id]}</span>`:""}<span class="n">${esc(i.name)}</span><span class="s">${i.store==="냉장"?"":i.store+" · "}${daysTxt(i.days)}</span></button>${counts[i.id]?`<button class="minus" data-minus="${i.id}" aria-label="${esc(i.name)} 하나 빼기">−</button>`:""}</div>`}
+function ingBtn(i,counts,hid){const changed=!!overrides()[i.id];return `<div class="ingw"><button class="ing ${i.id.startsWith("c_")?"mine":""} ${hid?"hid":""} ${editMode?"editing":""}" data-k="${i.id}">${counts[i.id]&&!editMode?`<span class="have">${counts[i.id]}</span>`:""}${editMode?`<span class="pen" aria-hidden="true">✎</span>`:""}<span class="n">${esc(i.name)}</span><span class="s">${hid?"숨김":`${i.store==="냉장"?"":i.store+" · "}${daysTxt(i.days)}${changed?" · 변경":""}`}</span></button>${counts[i.id]&&!editMode?`<button class="minus" data-minus="${i.id}" aria-label="${esc(i.name)} 하나 빼기">−</button>`:""}</div>`}
 function renderAdd(){
   if(addMode==="menu"){renderMenu();return}
+  if(addMode==="rcpt"){renderReceipt();return}
   const v=$("#v-add");
   const counts={};state.items.forEach(i=>{if(i.key)counts[i.key]=(counts[i.key]||0)+1});
   const q=addQuery.trim();
-  const mine=myIngs();
+  const mine=myIngs(),hid=hiddenSet();
   if(addCat==="mine"&&!mine.length)addCat="veg";
   const catList=CATS.concat(mine.some(c=>c.cat==="etc")?[["etc","기타"]]:[]).concat(mine.length?[["mine","내 재료"]]:[]);
-  const pool=q?allIngs().filter(i=>i.name.includes(q)):addCat==="mine"?mine:allIngs().filter(i=>i.cat===addCat);
+  let pool=q?allIngs().filter(i=>i.name.includes(q)):addCat==="mine"?mine:allIngs().filter(i=>i.cat===addCat);
+  const hiddenHere=pool.filter(i=>hid.has(i.id)).length;
+  if(!editMode)pool=pool.filter(i=>!hid.has(i.id));
   const B=[[0,"오늘"],[1,"어제"],[3,"2~3일 전"],[7,"일주일 전"]];
-  let grid=pool.map(i=>ingBtn(i,counts)).join("");
-  if(q&&!allIngs().some(i=>i.name===q))grid+=`<button class="ing custom" id="custom"><span class="n">‘${esc(q)}’</span><span class="s">새 버튼 만들기</span></button>`;
+  let grid=pool.map(i=>ingBtn(i,counts,hid.has(i.id))).join("");
+  if(!editMode&&q&&!allIngs().some(i=>i.name===q))grid+=`<button class="ing custom" id="custom"><span class="n">‘${esc(q)}’</span><span class="s">새 버튼 만들기</span></button>`;
   if(!q)grid+=`<button class="ing custom" id="newIng"><span class="n">+ 새 재료</span><span class="s">버튼 만들기</span></button>`;
   v.innerHTML=modeHTML()+`
-    <div class="field"><span class="lbl">언제 샀어요?</span><div class="chips">${B.map(([n,l])=>`<button class="chip" data-b="${n}" aria-pressed="${boughtOffset===n}">${l}</button>`).join("")}</div></div>
+    ${editMode?"":`<div class="field"><span class="lbl">언제 샀어요?</span><div class="chips">${B.map(([n,l])=>`<button class="chip" data-b="${n}" aria-pressed="${boughtOffset===n}">${l}</button>`).join("")}</div></div>`}
     <div class="field"><label for="q">찾기 또는 직접 입력</label><input id="q" class="search" type="search" placeholder="예: 양파, 닭다리, 연어" value="${esc(addQuery)}" autocomplete="off"></div>
     ${q?"":`<div class="chips" role="group" aria-label="분류">${catList.map(([k,l])=>`<button class="chip" data-c="${k}" aria-pressed="${addCat===k}">${l}</button>`).join("")}</div>`}
+    ${editMode?`<div class="editbar"><span>편집 중 · 버튼을 누르면 기본 소비기한·보관 방법을 바꾸거나 숨길 수 있어요.</span><button class="btn" id="editToggle">완료</button></div>`
+      :`<div class="gridhead"><span class="note">${hiddenHere?`숨긴 버튼 ${hiddenHere}개`:""}</span><button class="linkbtn" id="editToggle">✎ 버튼 편집</button></div>`}
     <div class="grid">${grid}</div>
     ${!q&&addCat==="mine"?`<div><div class="sec-h"><h2>내가 만든 버튼</h2><small>${mine.length}개</small></div><div class="list">${mine.map(c=>`<div class="row" style="cursor:default"><div style="min-width:0"><div class="nm">${esc(c.name)}</div><div class="meta">${esc((CATS.find(x=>x[0]===c.cat)||["","기타"])[1])} · ${c.store} · 기한 ${daysTxt(c.days)}</div></div><span style="display:flex;gap:6px"><button class="btn line" style="padding:6px 10px;font-size:13px" data-editc="${c.id}">수정</button><button class="btn danger" style="padding:6px 10px;font-size:13px" data-delc="${c.id}">지우기</button></span></div>`).join("")}</div><p class="note">버튼을 지워도 이미 냉장고에 담긴 재료는 그대로 있어요.</p></div>`:""}
-    <p class="note">누르면 바로 담기고, 왼쪽 위 − 를 누르면 하나씩 빠져요. 목록에 없는 재료는 ‘+ 새 재료’로 버튼을 만들어 두면 다음부터 한 번에 담을 수 있어요.</p>`;
+    ${editMode?"":`<p class="note">누르면 바로 담기고, 왼쪽 위 − 를 누르면 하나씩 빠져요. 목록에 없는 재료는 ‘+ 새 재료’로 버튼을 만들어 두면 다음부터 한 번에 담을 수 있어요.</p>`}`;
   bindMode(v);
   v.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>{boughtOffset=+b.dataset.b;renderAdd()});
   v.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{addCat=b.dataset.c;renderAdd()});
+  $("#editToggle").onclick=()=>{editMode=!editMode;renderAdd()};
   const qi=v.querySelector("#q");
   qi.oninput=()=>{addQuery=qi.value;const pos=qi.selectionStart;renderAdd();const n=$("#q");n.focus();try{n.setSelectionRange(pos,pos)}catch(e){}};
   qi.onkeydown=e=>{if(e.key==="Enter"){const c=$("#custom")||v.querySelector(".ing");if(c)c.click()}};
@@ -462,7 +483,9 @@ function renderAdd(){
     toast(`${it.name} 하나 뺐어요`,()=>{state.items.splice(Math.min(idx,state.items.length),0,it);commit()});
   });
   v.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
-    const ing=ingById(b.dataset.k);if(!ing)return;const it=addItem(ing,boughtOffset);commit();
+    const ing=ingById(b.dataset.k);if(!ing)return;
+    if(editMode){openIngSheet(ing);return}
+    const it=addItem(ing,boughtOffset);commit();
     const nb=document.querySelector(`#v-add [data-k="${ing.id}"]`);if(nb)nb.classList.add("pop");
     toast(`${ing.name} 담음 · ${md(it.expires)}까지`,()=>{state.items=state.items.filter(x=>x.id!==it.id);commit()});
   });
@@ -473,28 +496,42 @@ function renderAdd(){
     const id=b.dataset.delc;const idx=myIngs().findIndex(x=>x.id===id);const [gone]=state.custom.splice(idx,1);commit();
     toast(`‘${gone.name}’ 버튼을 지웠어요`,()=>{state.custom.splice(idx,0,gone);commit()})}});
 }
+// pre: {} new · {name} new with name · custom ingredient (c_) · built-in ingredient (with overrides applied)
 function openIngSheet(pre){
-  pre=pre||{};const editing=!!pre.id;
-  const guess=pre.name?matchKey(pre.name):null;
+  pre=pre||{};
+  const builtin=!!(pre.id&&ING[pre.id]);const editing=!!pre.id;
+  const guess=!editing&&pre.name?matchKey(pre.name):null;
   const d={name:pre.name||"",cat:pre.cat||(guess?ING[guess].cat:(addCat==="mine"?"veg":addCat)),days:pre.days||(guess?ING[guess].days:7),store:pre.store||(guess?ING[guess].store:"냉장")};
+  const isHidden=builtin&&hiddenSet().has(pre.id);
   const root=$("#sheetRoot");
   const CATX=CATS.concat([["etc","기타"]]);const DAYS=[2,3,5,7,14,30,90,180];
   const draw=()=>{
+    const base=builtin?ING[pre.id]:null;
     root.innerHTML=`<div class="scrim" id="scrim"><form class="sheet" role="dialog" aria-modal="true" aria-labelledby="ni-t" id="niForm">
-      <h2 id="ni-t">${editing?"재료 버튼 수정":"새 재료 버튼"}</h2>
-      <div class="field"><label for="ni-name">이름</label><input type="text" id="ni-name" value="${esc(d.name)}" placeholder="예: 연어, 닭다리, 체다치즈" required maxlength="20"></div>
-      <div class="field"><span class="lbl">분류</span><div class="chips">${CATX.map(([k,l])=>`<button type="button" class="chip" data-nc="${k}" aria-pressed="${d.cat===k}">${l}</button>`).join("")}</div></div>
-      <div class="field"><span class="lbl">보통 며칠 가요? (소비기한 기본값)</span><div class="chips">${DAYS.map(n=>`<button type="button" class="chip" data-nd="${n}" aria-pressed="${d.days===n}">${daysTxt(n)}</button>`).join("")}</div></div>
+      <h2 id="ni-t">${builtin?`${esc(base.name)} 기본값`:editing?"재료 버튼 수정":"새 재료 버튼"}</h2>
+      ${builtin?`<p class="note" style="margin:0">처음 정해진 값: ${base.store} · ${daysTxt(base.days)}. 바꾼 값은 앞으로 담는 재료부터 적용돼요.</p>`
+        :`<div class="field"><label for="ni-name">이름</label><input type="text" id="ni-name" value="${esc(d.name)}" placeholder="예: 연어, 닭다리, 체다치즈" required maxlength="20"></div>
+      <div class="field"><span class="lbl">분류</span><div class="chips">${CATX.map(([k,l])=>`<button type="button" class="chip" data-nc="${k}" aria-pressed="${d.cat===k}">${l}</button>`).join("")}</div></div>`}
+      <div class="field"><span class="lbl">보통 며칠 가요? (소비기한 기본값)</span><div class="chips">${DAYS.map(n=>`<button type="button" class="chip" data-nd="${n}" aria-pressed="${d.days===n}">${daysTxt(n)}</button>`).join("")}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><label for="ni-days" class="lbl">직접 입력</label><input type="number" id="ni-days" min="1" max="999" inputmode="numeric" value="${d.days}" style="width:90px"><span class="lbl">일</span></div></div>
       <div class="field"><span class="lbl">보관</span><div class="seg">${["냉장","냉동","실온"].map(s=>`<button type="button" data-ns="${s}" aria-pressed="${d.store===s}">${s}</button>`).join("")}</div></div>
       <button class="btn" type="submit">${editing?"저장":"버튼 만들고 담기"}</button>
-      ${editing?"":`<button class="linkbtn" type="button" id="ni-only">버튼만 만들기 (지금은 안 담기)</button>`}
+      ${!editing?`<button class="linkbtn" type="button" id="ni-only">버튼만 만들기 (지금은 안 담기)</button>`:""}
+      ${builtin?`<div class="acts"><button class="btn ghost" type="button" id="ni-reset" ${overrides()[pre.id]?"":"disabled"}>처음 값으로</button><button class="btn line" type="button" id="ni-hide">${isHidden?"다시 보이기":"이 버튼 숨기기"}</button></div>`:""}
     </form></div>`;
-    const nm=$("#ni-name");nm.oninput=()=>{d.name=nm.value};
+    const nm=$("#ni-name");if(nm)nm.oninput=()=>{d.name=nm.value};
+    const nd=$("#ni-days");nd.oninput=()=>{const x=parseInt(nd.value,10);if(x>0&&x<1000)d.days=x;root.querySelectorAll("[data-nd]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.nd===d.days))};
     root.querySelectorAll("[data-nc]").forEach(b=>b.onclick=()=>{d.cat=b.dataset.nc;draw()});
     root.querySelectorAll("[data-nd]").forEach(b=>b.onclick=()=>{d.days=+b.dataset.nd;draw()});
     root.querySelectorAll("[data-ns]").forEach(b=>b.onclick=()=>{d.store=b.dataset.ns;draw()});
     $("#scrim").onclick=e=>{if(e.target.id==="scrim")close()};
-    const save=put=>{const name=d.name.trim();if(!name){nm.focus();return}
+    const save=put=>{
+      if(builtin){
+        if(!state.overrides||typeof state.overrides!=="object")state.overrides={};
+        const base=ING[pre.id];
+        if(d.days===base.days&&d.store===base.store)delete state.overrides[pre.id];else state.overrides[pre.id]={days:d.days,store:d.store};
+        close();commit();toast(`${base.name} 기본값을 ${d.store} · ${daysTxt(d.days)}로 바꿨어요`);return}
+      const name=d.name.trim();if(!name){nm.focus();return}
       if(!editing&&allIngs().some(i=>i.name===name)){toast(`‘${name}’ 버튼은 이미 있어요`);return}
       if(!Array.isArray(state.custom))state.custom=[];
       let ing;
@@ -505,10 +542,100 @@ function openIngSheet(pre){
       else{commit();toast(editing?"버튼을 수정했어요":`‘${name}’ 버튼을 만들었어요`)}};
     $("#niForm").onsubmit=e=>{e.preventDefault();save(!editing)};
     const only=$("#ni-only");if(only)only.onclick=()=>save(false);
+    const rs=$("#ni-reset");if(rs)rs.onclick=()=>{delete state.overrides[pre.id];close();commit();toast(`${ING[pre.id].name} 기본값을 처음 값으로 돌렸어요`)};
+    const hd=$("#ni-hide");if(hd)hd.onclick=()=>{const s=hiddenSet();isHidden?s.delete(pre.id):s.add(pre.id);state.hidden=[...s];close();commit();toast(isHidden?`${ING[pre.id].name} 버튼을 다시 보여요`:`${ING[pre.id].name} 버튼을 숨겼어요 · 편집에서 다시 보이게 할 수 있어요`)};
   };
   const onKey=e=>{if(e.key==="Escape")close()};
   const close=()=>{root.innerHTML="";document.removeEventListener("keydown",onKey)};
   document.addEventListener("keydown",onKey);draw();setTimeout(()=>{const n=$("#ni-name");if(n&&!n.value)n.focus()},0);
+}
+
+// ---------- receipt ----------
+let rcpt={busy:false,msg:"",ctl:null,rows:null,date:null,stage:""};
+const RCPT_SKIP=/합계|총액|부가세|과세|면세|카드|결제|승인|영수증|매출|금액|할인|포인트|사업자|전화|주소|대표|거스름|받은|현금|봉투|쿠폰|적립|일시불|가맹|번호|TEL|POS|합 계/i;
+function mapToIng(name){
+  const b=bare(name);if(!b)return null;
+  const all=allIngs();
+  return all.find(i=>bare(i.name)===b)||all.filter(i=>{const n=bare(i.name);return n.length>=1&&b.includes(n)}).sort((x,y)=>bare(y.name).length-bare(x.name).length)[0]||null;
+}
+function rowFrom(raw,name,qty){
+  const ing=mapToIng(name)||mapToIng(raw);
+  return {raw:String(raw||name).slice(0,40),name:ing?ing.name:String(name||raw).trim().slice(0,20),ingId:ing?ing.id:null,qty:Math.max(1,Math.min(9,parseInt(qty,10)||1)),on:!!ing};
+}
+function renderReceipt(){
+  const v=$("#v-add");
+  let html=modeHTML();
+  html+=`<div class="upl"><p>마트·시장 영수증을 찍거나 저장된 사진을 고르면 산 재료 목록을 뽑아 드려요.</p>
+    ${rcpt.busy?`<span class="note">${esc(rcpt.stage||"영수증을 읽는 중…")}</span>${rcpt.ctl?`<button class="btn line" id="rcStop">멈추기</button>`:""}`
+      :`<div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn" for="rcCam" tabindex="0">영수증 찍기</label><label class="btn line" for="rcPick" tabindex="0">사진 불러오기</label></div>`}
+    <input type="file" id="rcCam" accept="image/*" capture="environment" hidden><input type="file" id="rcPick" accept="image/*" hidden>
+    ${rcpt.msg?`<span class="note" style="flex-basis:100%">${esc(rcpt.msg)}</span>`:""}</div>`;
+  if(rcpt.rows){
+    const on=rcpt.rows.filter(r=>r.on);const n=on.reduce((s,r)=>s+r.qty,0);
+    const bought=rcpt.date||addDays(todayStr(),-boughtOffset);
+    html+=`<div><div class="sec-h"><h2>영수증에서 찾은 재료</h2><small>${rcpt.rows.length}개 · 담을 것만 고르기</small></div>
+      ${rcpt.rows.length?`<div class="list">${rcpt.rows.map((r,i)=>{const ing=r.ingId?ingById(r.ingId):null;return `<button class="opt" data-ri="${i}" aria-pressed="${r.on}">
+        <span class="k">${r.on?"✓":""}</span>
+        <span class="dn">${esc(r.name)}${r.qty>1?` <span class="note">×${r.qty}</span>`:""}<br><span class="lb">${r.raw&&r.raw!==r.name?esc(r.raw)+" · ":""}${ing?`${ing.store} · ${daysTxt(ing.days)}`:"목록에 없는 재료 · 7일"}</span></span>
+        <span class="pr">${r.qty>1?"":""}</span></button>`}).join("")}</div>`:`<p class="note">식재료를 찾지 못했어요. 영수증이 잘 보이게 다시 찍어 보세요.</p>`}</div>`;
+    html+=`<div class="field"><span class="lbl">구입일</span><div class="chips">${rcpt.date?`<button class="chip" aria-pressed="true" disabled>${md(rcpt.date)} (영수증 날짜)</button>`:[[0,"오늘"],[1,"어제"],[3,"2~3일 전"]].map(([k,l])=>`<button class="chip" data-rb="${k}" aria-pressed="${boughtOffset===k}">${l}</button>`).join("")}</div></div>`;
+    html+=`<div class="cta"><span class="sum"><b class="num">${n}</b>개 담기 · ${md(bought)} 구입</span><span style="display:flex;gap:8px"><button class="btn ghost" id="rcClear">지우기</button><button class="btn" id="rcPut" ${n?"":"disabled"}>냉장고에 넣기</button></span></div>`;
+  }
+  html+=`<p class="note">${CLAUDE_RT?"Claude가 사진을 읽어요. 처음 쓸 때 허용을 물어봐요.":"사진 속 글자를 이 기기에서 읽어요. 처음엔 글자 인식 데이터를 받느라 조금 걸리고, 흐린 영수증은 잘못 읽을 수 있어요."} 목록에 없는 재료는 기본 7일로 담기니 냉장고 탭에서 고쳐 주세요.</p>`;
+  v.innerHTML=html;bindMode(v);
+  ["rcCam","rcPick"].forEach(id=>{const f=v.querySelector("#"+id);if(f)f.onchange=()=>{if(f.files&&f.files[0])readReceipt(f.files[0])};
+    const lb=v.querySelector(`label[for="${id}"]`);if(lb)lb.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f.click()}}});
+  const st=v.querySelector("#rcStop");if(st)st.onclick=()=>rcpt.ctl&&rcpt.ctl.abort();
+  v.querySelectorAll("[data-ri]").forEach(b=>b.onclick=()=>{const r=rcpt.rows[+b.dataset.ri];r.on=!r.on;renderReceipt()});
+  v.querySelectorAll("[data-rb]").forEach(b=>b.onclick=()=>{boughtOffset=+b.dataset.rb;renderReceipt()});
+  const cl=v.querySelector("#rcClear");if(cl)cl.onclick=()=>{rcpt={busy:false,msg:"",ctl:null,rows:null,date:null};renderReceipt()};
+  const put=v.querySelector("#rcPut");if(put)put.onclick=()=>{
+    const off=rcpt.date?diff(rcpt.date,todayStr()):boughtOffset;const ids=[];
+    for(const r of rcpt.rows.filter(r=>r.on)){const ing=r.ingId?ingById(r.ingId):{id:null,name:r.name,cat:"etc",days:7,store:"냉장"};
+      for(let k=0;k<r.qty;k++)ids.push(addItem(ing,Math.max(0,off)).id)}
+    rcpt={busy:false,msg:"",ctl:null,rows:null,date:null};commit();
+    toast(`영수증 재료 ${ids.length}개를 담았어요`,()=>{state.items=state.items.filter(i=>!ids.includes(i.id));commit()});
+  };
+}
+function setRcpt(p){Object.assign(rcpt,p);if(tab==="add"&&addMode==="rcpt")renderReceipt()}
+function validDate(s){if(typeof s!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s))return null;const dd=diff(s,todayStr());return dd>=0&&dd<=60?s:null}
+async function readReceipt(file){
+  setRcpt({busy:true,msg:"",rows:null,date:null,stage:"영수증을 읽는 중…"});
+  try{
+    if(CLAUDE_RT){
+      const sample=await claude.use("sample");
+      if(!sample)throw {code:"unavailable_here"};
+      const lim=await sample.limits().catch(()=>null);if(!lim||!lim.images)throw {code:"unavailable_here"};
+      const ctl=new AbortController();setRcpt({ctl});
+      const names=allIngs().map(i=>i.name.replace(/\(.*\)/,"")).join(", ");
+      const r=await sample.json(`이 이미지는 마트나 시장 영수증입니다. 오늘은 ${todayStr()}입니다.
+냉장고에 넣을 식재료(채소, 과일, 고기, 해산물, 유제품, 계란, 두부, 김치, 면, 빵 등)만 고르세요. 세제, 봉투, 생활용품, 과자·음료 같은 것은 빼세요.
+name은 냉장고에 적을 짧은 재료 이름이에요. 가능하면 다음 이름 중 하나를 그대로 쓰세요: ${names}
+JSON만 답하세요: {"date":"영수증 구매일 YYYY-MM-DD 또는 null","items":[{"raw":"영수증에 적힌 상품명","name":"재료 이름","qty":수량}]}`,{images:file,signal:ctl.signal,cache:false});
+      const items=r&&Array.isArray(r.items)?r.items.filter(x=>x&&(x.name||x.raw)):[];
+      setRcpt({busy:false,ctl:null,rows:items.map(x=>rowFrom(x.raw,x.name||x.raw,x.qty)).map(r=>({...r,on:true})),date:validDate(r&&r.date)});
+    }else{
+      if(!window.Tesseract){setRcpt({stage:"글자 인식 도구를 불러오는 중…"});await new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";s.onload=ok;s.onerror=()=>no({code:"load_failed"});document.head.append(s)})}
+      setRcpt({stage:"글자 인식 데이터를 받는 중… (처음 한 번만)"});
+      const worker=await Tesseract.createWorker("kor",1,{logger:m=>{if(m.status==="recognizing text")setRcpt({stage:`영수증 읽는 중… ${Math.round(m.progress*100)}%`})}});
+      const {data}=await worker.recognize(file);await worker.terminate();
+      const text=data&&data.text||"";
+      const dm=text.match(/(20\d{2})[.\-\/년 ]\s*(\d{1,2})[.\-\/월 ]\s*(\d{1,2})/);
+      const date=dm?validDate(`${dm[1]}-${pad(+dm[2])}-${pad(+dm[3])}`):null;
+      const rows=[],seen=new Set();
+      for(const line of text.split(/\n/)){
+        if(RCPT_SKIP.test(line))continue;
+        const clean=line.replace(/[0-9,.*#@\-_=+:;'"()\[\]{}<>|\/\\%₩원]+/g," ").replace(/\b[a-zA-Z]{1,2}\b/g," ").replace(/\s+/g," ").trim();
+        if((clean.match(/[가-힣]/g)||[]).length<2)continue;
+        const r=rowFrom(clean,clean,1);
+        const key=r.ingId||r.name;if(seen.has(key))continue;seen.add(key);rows.push(r);
+      }
+      setRcpt({busy:false,rows:rows.sort((a,b)=>(b.on-a.on)),date,msg:rows.some(r=>r.on)?"":"아는 재료를 찾지 못했어요. 필요한 줄만 골라 주세요."});
+    }
+  }catch(e){
+    const M={cancelled:"",unavailable_here:"이 화면에서는 사진을 읽을 수 없어요.",not_granted:"Claude 사용을 허용하지 않아 사진을 읽을 수 없어요.",image_rejected:"이 사진은 읽을 수 없어요. JPG나 PNG로 다시 골라 주세요.",rate_limited:"요청이 많아요. 잠시 뒤 다시 해 주세요.",invalid_json:"영수증을 읽지 못했어요. 다시 찍어 주세요.",load_failed:"글자 인식 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요."};
+    setRcpt({busy:false,ctl:null,msg:(e&&e.code in M)?M[e.code]:"영수증을 읽지 못했어요. 다시 해 주세요."});
+  }
 }
 
 
