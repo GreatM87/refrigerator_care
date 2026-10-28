@@ -3,33 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F1F4F1">
+<meta name="theme-color" content="#D9F2E6">
 <title>냉장고 비우기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
 <style>
 :root{padding-top:env(safe-area-inset-top,0px)}
 body{margin:0}
 img{max-width:100%}
-/* Layout: one calm column (max 560px), sticky summary up top, fixed three-tab bar at the bottom. Frost-white porcelain + deep pine, urgency in rust/amber. */
+/* Layout: one column (max 560px), fixed tab bar. "냉장고 친구들": mint ground, navy ink outlines, coral/yellow pops, ingredient faces. Single light look by choice. */
 :root{
-  --bg:#F1F4F1; --surface:#FFFFFF; --sunk:#E8EDE9; --ink:#17201C; --muted:#5C6962; --line:#D8DFDA;
-  --accent:#2C5A4C; --accent-ink:#FFFFFF; --accent-soft:#E1EBE6;
-  --over:#B0412D; --over-soft:#F5E1DA; --soon:#9E620C; --soon-soft:#F4E8D2; --ok:#4A7558;
-  --shadow:0 1px 2px rgba(23,32,28,.05),0 6px 24px rgba(23,32,28,.06);
-  --f-display:"Gowun Batang","Nanum Myeongjo",serif;
-  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --bg:#D9F2E6; --surface:#FFFFFF; --sunk:#EDF8F2; --ink:#1E2A4A; --muted:#4E5B78; --line:#1E2A4A; --hair:#C9D6E3;
+  --accent:#1F7A4A; --accent-ink:#FFFFFF; --accent-soft:#DDF3E6;
+  --pop:#FF6B5B; --sun:#FFD23F;
+  --over:#C8392B; --over-soft:#FFE1DC; --soon:#7A5200; --soon-soft:#FFF0B3; --ok:#1F7A4A;
+  --shadow:3px 3px 0 #1E2A4A;
+  --f-display:"Jua","Gowun Dodum",sans-serif;
+  --f-body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#111614; --surface:#18201C; --sunk:#141A17; --ink:#E6ECE8; --muted:#97A49D; --line:#28322D;
-  --accent:#8EC3AF; --accent-ink:#0E1512; --accent-soft:#1E2D27;
-  --over:#E68B75; --over-soft:#3A231D; --soon:#E0B56C; --soon-soft:#352A17; --ok:#8DBF9C;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.25); color-scheme:dark;}}
-:root[data-theme="dark"]{
-  --bg:#111614; --surface:#18201C; --sunk:#141A17; --ink:#E6ECE8; --muted:#97A49D; --line:#28322D;
-  --accent:#8EC3AF; --accent-ink:#0E1512; --accent-soft:#1E2D27;
-  --over:#E68B75; --over-soft:#3A231D; --soon:#E0B56C; --soon-soft:#352A17; --ok:#8DBF9C;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.25); color-scheme:dark;}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{background:var(--bg)}
@@ -143,7 +135,7 @@ section.view{display:grid;gap:20px;margin-top:20px}
 
 /* bottom nav */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
 nav.tabs button{border:0;background:none;padding:12px 0 14px;display:grid;justify-items:center;gap:3px;color:var(--muted);font-size:12px;font-weight:500}
 nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 nav.tabs button[aria-current="page"]{color:var(--ink)}
@@ -172,6 +164,26 @@ nav.tabs button[aria-current="page"] span{font-weight:700}
 .ing.hid{opacity:.5}
 .ing .pen{position:absolute;top:6px;right:8px;font-size:12px;color:var(--soon)}
 .opt .k{font-size:15px}
+/* kid */
+.kidhead h2{font-size:24px}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;gap:10px}
+.kids{display:grid;gap:10px}
+.kt{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.kt b{font-size:16px;word-break:keep-all}
+.kcard .meta{font-size:12px;color:var(--muted);margin-top:-6px}
+.warn{font-size:12px;font-weight:600;color:var(--over);background:var(--over-soft);border-radius:8px;padding:5px 9px;justify-self:start}
+.rate{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.rate .lbl{margin-right:auto}
+.rate .btn{padding:8px 12px;font-size:13px}
+.tipcard{background:var(--accent-soft);border-color:transparent;font-size:14px;gap:6px}
+.two-col{display:grid;grid-template-columns:1fr;gap:16px}
+.u.good{background:var(--accent-soft);color:var(--accent)}
+.u.bad{background:var(--over-soft);color:var(--over)}
+.taste{display:block;font-size:11px;font-weight:600;color:var(--muted)}
+.taste.good{color:var(--accent)}.taste.bad{color:var(--over)}
+.opt .warn{display:block;margin-top:4px;padding:2px 7px;font-size:11px}
+.rate3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rate3 .btn{padding:11px 4px;font-size:13px}
 /* banchan menu */
 .seg.two{grid-template-columns:1fr 1fr}
 .upl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
@@ -199,16 +211,80 @@ nav.tabs button[aria-current="page"] span{font-weight:700}
 .cta .sum b{font-family:var(--f-display);font-size:17px}
 @media (max-width:400px){.top h1{font-size:24px}.rail{gap:3px}.stat b{font-size:22px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== 냉장고 친구들 theme ===== */
+h1,h2,h3{font-weight:400}
+.btn,.chip,.badge,.seg button,nav.tabs button span,.stat b,.cell .c,.ing .n,.opt .k,.dchip b,.toast{font-family:var(--f-display);font-weight:400}
+.summary,.list,.card,.kcard,.upl,.pv,.cta,.empty,.ai{border:2.5px solid var(--line);box-shadow:var(--shadow);border-radius:22px}
+.empty{border-style:solid}
+.row{border-top:1.5px dashed var(--hair)}
+.row:first-child{border-top:0}
+.opt{border-top:1.5px dashed var(--hair)}
+.row.fr{grid-template-columns:auto minmax(0,1fr) auto}
+.face{display:block;flex:none}
+.chip{border:2px solid var(--line);font-size:14px;padding:5px 13px}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn{border:2.5px solid var(--line);box-shadow:2px 2px 0 var(--line);font-size:16px;padding:9px 16px;background:var(--pop);color:#1E2A4A}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.line{background:var(--sun);color:var(--ink)}
+.btn.danger{background:var(--over-soft);color:var(--over)}
+.badge{border:2px solid var(--line);background:#fff;color:var(--ink);font-size:13px;padding:2px 9px}
+.badge.over{background:var(--pop);color:#1E2A4A}
+.badge.soon{background:var(--sun);color:var(--ink)}
+.search,.sheet input[type=text],.sheet input[type=date],.sheet input[type=number]{border:2px solid var(--line);border-radius:14px;background:#fff}
+.seg{border:2.5px solid var(--line);border-radius:14px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.ing{border:2px solid var(--line);border-radius:16px;box-shadow:2px 2px 0 var(--line)}
+.ing.custom{border-style:dashed;box-shadow:none}
+.ing.mine{background:var(--accent-soft)}
+.ing .have{background:var(--pop);color:#1E2A4A;border:2px solid var(--line);min-width:22px;height:22px;font-size:12px}
+.minus{border:2px solid var(--line);color:var(--ink)}
+.cell{background:var(--sunk);border:1.5px solid var(--hair)}
+.cell.today{outline:none;border:2px solid var(--line);background:#fff}
+.cell.over .dots i{background:var(--pop);border:1px solid var(--line)} .cell.soon .dots i{background:var(--sun);border:1px solid var(--line)}
+.cell .dots i{background:var(--accent)}
+.stat.over b{color:var(--over)} .stat.soon b{color:var(--soon)}
+.u{border:1.5px solid var(--hair);border-radius:999px;padding:2px 10px}
+.u.over{background:var(--over-soft);border-color:transparent}.u.soon{background:var(--soon-soft);border-color:transparent}
+.ai{background:var(--sun);color:var(--ink)}
+.ai .btn{background:#fff;color:var(--ink)}
+.ai .stop{background:#fff}
+.tipcard{background:var(--sun);border:2.5px solid var(--line)}
+nav.tabs{border-top:2.5px solid var(--line)}
+nav.tabs button{color:var(--muted)}
+nav.tabs button[aria-current="page"] span{font-weight:400;background:var(--ink);color:#fff;border-radius:999px;padding:1px 10px}
+nav.tabs button[aria-current="page"] svg{stroke:var(--ink)}
+.pill{background:var(--pop);color:#1E2A4A;border:1.5px solid var(--line)}
+.toast{border-radius:999px;padding:10px 16px}
+.sheet{border:2.5px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0}
+.editbar{background:var(--sun);color:var(--ink);border:2px solid var(--line)}
+.warn{color:var(--over)}
+.banner{background:var(--sun);color:var(--ink);border:2px solid var(--line)}
+.tag-old{color:var(--soon)}
+/* header */
+.top{align-items:center}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand h1{font-size:27px;line-height:1.05}
+.top .date{text-align:left;font-size:13px}
+.lv{flex:none;background:var(--sun);border:2.5px solid var(--line);border-radius:999px;padding:4px 12px;font-family:var(--f-display);font-size:14px;box-shadow:2px 2px 0 var(--line);white-space:nowrap}
+/* SOS hero */
+.sos{display:flex;gap:14px;align-items:center;background:var(--pop);border:2.5px solid var(--line);border-radius:26px;padding:16px;box-shadow:4px 4px 0 var(--line)}
+.sos .t1{font-family:var(--f-display);font-size:13px}
+.sos .t2{font-family:var(--f-display);font-size:21px;line-height:1.25;color:#fff;text-shadow:0 1px 0 rgba(30,42,74,.35)}
+.sos .btn{background:#fff;color:var(--ink);padding:6px 14px;font-size:14px;margin-top:6px}
+.friends{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.friend{display:grid;justify-items:center;gap:2px;border:0;background:none;padding:0;position:relative}
+.friend .fd{position:absolute;right:2px;top:-4px;font-family:var(--f-display);font-size:11px;border:2px solid var(--line);border-radius:999px;padding:0 6px;background:#fff}
+.friend .fd.over{background:var(--pop)} .friend .fd.soon{background:var(--sun)}
+.friend span.fn{font-size:13px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div>
-      <div class="eyebrow">MY FRIDGE</div>
-      <h1>냉장고 비우기</h1>
-    </div>
-    <div class="date" id="today"></div>
+    <div class="brand"><svg class="face" width="46" height="46" viewBox="0 0 44 44" aria-hidden="true"><rect x="8" y="3" width="28" height="38" rx="8" fill="#FFFFFF" stroke="#1E2A4A" stroke-width="2.5"/><line x1="8" y1="17" x2="36" y2="17" stroke="#1E2A4A" stroke-width="2.5"/><line x1="13" y1="8" x2="13" y2="13" stroke="#1E2A4A" stroke-width="2.5" stroke-linecap="round"/><circle cx="18" cy="27" r="2" fill="#1E2A4A"/><circle cx="27" cy="27" r="2" fill="#1E2A4A"/><path d="M19 32 Q22.5 35 26 32" stroke="#1E2A4A" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="15" cy="31" r="2.2" fill="#FF9D8F"/><circle cx="30" cy="31" r="2.2" fill="#FF9D8F"/></svg><div><h1>냉장고 비우기</h1><div class="date" id="today"></div></div></div>
+    <div class="lv" id="lv"></div>
   </header>
 
   <div class="summary" id="summary"></div>
@@ -216,12 +292,14 @@ nav.tabs button[aria-current="page"] span{font-weight:700}
   <section class="view" id="v-fridge"></section>
   <section class="view" id="v-add" hidden></section>
   <section class="view" id="v-cook" hidden></section>
+  <section class="view" id="v-kid" hidden></section>
 </div>
 
 <nav class="tabs" aria-label="메뉴"><div class="in">
   <button data-tab="fridge" aria-current="page"><svg viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M5 9.5h14M8.5 5.5v2M8.5 12.5v3"/></svg><span>냉장고<b class="pill" id="pill" hidden></b></span></button>
   <button data-tab="add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>담기</span></button>
   <button data-tab="cook"><svg viewBox="0 0 24 24"><path d="M4 11h16v2a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6z"/><path d="M2.5 11h19M9 7c0-1.5 1-1.5 1-3M13 7c0-1.5 1-1.5 1-3"/></svg><span>요리 추천</span></button>
+  <button data-tab="kid"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 5.5c0-2 1.5-2.5 2.5-2"/><path d="M9.3 12.5h.01M14.7 12.5h.01"/><path d="M9.5 15.8c1.4 1.1 3.6 1.1 5 0"/></svg><span>아이 반찬</span></button>
 </div></nav>
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
@@ -377,14 +455,16 @@ function renderSummary(){
   for(let k=0;k<7;k++){const n=items.filter(i=>left(i)===k).length;const day=k===0?"오늘":k===1?"내일":WD[new Date(parse(addDays(t,k))).getUTCDay()];
     cells.push(`<div class="cell ${k<=2?"soon":""} ${k===0?"today":""}"><span class="d">${day}</span><span class="dots">${"<i></i>".repeat(Math.min(n,8))}</span><span class="c">${n||"·"}</span></div>`)}
   const m=state.log[t.slice(0,7)]||{eaten:0,tossed:0};
+  const totalEaten=Object.values(state.log).reduce((s,x)=>s+(x.eaten||0),0);
+  $("#lv").textContent=`구출왕 Lv.${1+Math.floor(totalEaten/5)}`;
   $("#summary").innerHTML=`
     <div class="stats">
-      <div class="stat"><b>${items.length}</b><span>보관 중</span></div>
-      <div class="stat soon"><b>${soon}</b><span>3일 안에 먹기</span></div>
+      <div class="stat"><b>${items.length}</b><span>냉장고 친구들</span></div>
+      <div class="stat soon"><b>${soon}</b><span>3일 안에 구출</span></div>
       <div class="stat over"><b>${over}</b><span>기한 지남</span></div>
     </div>
     <div><div class="lbl" style="margin-bottom:6px">이번 주 소비기한</div><div class="rail">${cells.join("")}</div></div>
-    <div class="saved"><span>이번 달 다 먹은 재료 <b class="num">${m.eaten}</b> · 버린 재료 <b class="num">${m.tossed}</b></span>${old?`<span>산 지 일주일 넘은 재료 ${old}개</span>`:""}</div>`;
+    <div class="saved"><span>이번 달 구출 <b class="num">${m.eaten}</b> · 놓친 친구 <b class="num">${m.tossed}</b></span>${old?`<span>산 지 일주일 넘은 재료 ${old}개</span>`:""}</div>`;
   const p=$("#pill");const urgent=over+soon;p.hidden=!urgent;p.textContent=urgent;
 }
 
@@ -406,6 +486,9 @@ function renderFridge(){
   if(filter==="banchan")list=list.filter(i=>i.kind==="banchan");
   const groups=[["over","기한 지남 · 상태 확인"],["soon","3일 안에"],["week","이번 주"],["ok","여유 있어요"]];
   let html=hasSample?`<div class="banner"><span>지금 보이는 건 예시 재료예요.</span><button id="clearSample">예시 지우기</button></div>`:"";
+  html+=sosHTML();
+  const urgentF=sorted().filter(i=>left(i)<=6).slice(0,8);
+  if(urgentF.length)html+=`<div><div class="sec-h"><h2>도와줘야 할 친구들</h2><small>${urgentF.length}명</small></div><div class="friends">${urgentF.map(i=>{const d=left(i),lv=level(d);return `<button class="friend" data-item="${i.id}" aria-label="${esc(i.name)} ${dLabel(d)}">${faceSVG(i,62)}<span class="fd ${lv==="over"?"over":lv==="soon"?"soon":""}">${d<0?"지남":"D-"+d}</span><span class="fn">${esc(i.name.replace(/\(.*\)/,""))}</span></button>`}).join("")}</div></div>`;
   html+=`<div class="chips" role="group" aria-label="필터">${F.map(([k,l])=>`<button class="chip" data-f="${k}" aria-pressed="${filter===k}">${l}</button>`).join("")}</div>`;
   if(!list.length)html+=`<p class="note">해당하는 재료가 없어요.</p>`;
   for(const [lv,title] of groups){
@@ -415,11 +498,12 @@ function renderFridge(){
   v.innerHTML=html;
   v.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{filter=b.dataset.f;renderFridge()});
   v.querySelectorAll("[data-item]").forEach(b=>b.onclick=()=>openSheet(b.dataset.item));
+  const sg=v.querySelector("#sosGo");if(sg)sg.onclick=()=>setTab("cook");
   const cs=v.querySelector("#clearSample");if(cs)cs.onclick=()=>{state.items=state.items.filter(i=>!i.sample);commit()};
 }
 function rowHTML(it){
   const d=left(it),a=age(it),lv=level(d);
-  return `<button class="row" data-item="${it.id}"><div style="min-width:0"><div class="nm">${esc(it.name)}${it.store!=="냉장"?`<small>${it.store}</small>`:""}${isOld(it)?`<span class="tag-old">${a}일째</span>`:""}</div>
+  return `<button class="row fr" data-item="${it.id}">${faceSVG(it,40)}<div style="min-width:0"><div class="nm">${esc(it.name)}${it.store!=="냉장"?`<small>${it.store}</small>`:""}${isOld(it)?`<span class="tag-old">${a}일째</span>`:""}</div>
     <div class="meta">${it.kind==="banchan"?`${esc(it.src||"반찬")} · `:`${md(it.bought)} 구입 · `}${md(it.expires)}까지</div></div>
     <span class="badge ${lv==="over"?"over":lv==="soon"?"soon":""}">${dLabel(d)}</span></button>`;
 }
@@ -691,11 +775,18 @@ function renderMenu(){
   const opts=[];
   for(const sl of (M.slots||SLOT_DEF)){const n=D.items[sl.key];if(n)opts.push({k:sl.key,badge:sl.key,label:sl.label,name:n,price:sl.price})}
   (M.always||[]).forEach((a,i)=>opts.push({k:"상시"+i,badge:"상",label:"상시메뉴",name:a.name,price:a.price}));
-  html+=`<div><div class="sec-h"><h2>${dayLabel(menuDate)} 신청한 반찬</h2><small>눌러서 고르기</small></div><div class="list">${opts.map(o=>`<button class="opt" data-o="${esc(o.k)}" aria-pressed="${menuSel.has(o.k)}">
+  const K=kid(),hasAll=K.allergies.length>0;
+  const freshBan=state.items.filter(i=>i.kind==="banchan"&&left(i)>=0);
+  const isHid=o=>hasAll&&K.hideAllergy&&allergyHits(o.name).length>0;
+  const hiddenN=opts.filter(isHid).length;
+  const shownOpts=opts.filter(o=>!isHid(o));
+  const optInfo=o=>{const hits=allergyHits(o.name),t=tasteOf(o.name),same=o.badge==="상"?0:freshBan.filter(i=>slotOf(i)===o.k).length;
+    return `${hits.length?`<span class="warn">알레르기 확인: ${esc(hits.join(", "))}</span>`:""}${t?`<span class="taste ${t.avg>=1.5?"good":t.avg<0.8?"bad":""}">${t.avg>=1.5?"잘 먹었던 메뉴":t.avg<0.8?"잘 안 먹었던 메뉴":"조금 먹었던 메뉴"} · ${t.n}번</span>`:""}${same?`<span class="taste">냉장고에 같은 칸 반찬 ${same}개 남음</span>`:""}`};
+  html+=`<div><div class="sec-h"><h2>${dayLabel(menuDate)} 신청한 반찬</h2><small>눌러서 고르기</small></div>${hasAll?`<div class="chips" style="margin-bottom:8px"><button class="chip" id="hideAll" aria-pressed="${!!K.hideAllergy}">알레르기 메뉴 숨기기${hiddenN?` · ${hiddenN}개 숨김`:""}</button></div>`:""}<div class="list">${shownOpts.map(o=>`<button class="opt" data-o="${esc(o.k)}" aria-pressed="${menuSel.has(o.k)}">
       <span class="k">${esc(o.badge)}</span>
-      <span class="dn"><span class="lb">${esc(o.label)}</span><br>${esc(cleanName(o.name))}${hasStar(o.name)?`<span class="star">★ 계란·마요·견과</span>`:""}${ordered.has(o.k)?`<span class="got-tag">이미 담았어요</span>`:""}</span>
+      <span class="dn"><span class="lb">${esc(o.label)}</span><br>${esc(cleanName(o.name))}${hasStar(o.name)?`<span class="star">★ 계란·마요·견과</span>`:""}${optInfo(o)}${ordered.has(o.k)?`<span class="got-tag">이미 담았어요</span>`:""}</span>
       <span class="pr">${won(o.price)}</span></button>`).join("")}</div></div>`;
-  const pick=opts.filter(o=>menuSel.has(o.k));
+  const pick=shownOpts.filter(o=>menuSel.has(o.k));
   const total=pick.reduce((s,o)=>s+(Number(o.price)||0),0);
   const exp=addDays(menuDate,keepDays);
   html+=`<div class="field"><span class="lbl">냉장 보관 기간 (받은 날부터)</span><div class="chips">${[2,3,4,5].map(n=>`<button class="chip" data-keep="${n}" aria-pressed="${keepDays===n}">${n}일</button>`).join("")}</div>
@@ -707,9 +798,10 @@ function renderMenu(){
   v.querySelectorAll("[data-date]").forEach(b=>b.onclick=()=>{menuDate=b.dataset.date;menuSel=new Set();renderMenu()});
   v.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{const k=b.dataset.o;menuSel.has(k)?menuSel.delete(k):menuSel.add(k);renderMenu()});
   v.querySelectorAll("[data-keep]").forEach(b=>b.onclick=()=>{keepDays=+b.dataset.keep;renderMenu()});
+  const ha=v.querySelector("#hideAll");if(ha)ha.onclick=()=>{kid().hideAllergy=!kid().hideAllergy;persist();renderMenu()};
   v.querySelector("#putIn").onclick=()=>{
     const date=menuDate,before=menus.orders[date]?[...menus.orders[date]]:null;
-    const added=pick.map(o=>{const it={id:uidGen(),key:null,kind:"banchan",name:cleanName(o.name),cat:"banchan",bought:date,expires:addDays(date,keepDays),store:"냉장",src:`${M.vendor||"반찬"} ${md(date)} ${o.badge==="상"?"상시":o.k}`};state.items.push(it);return it.id});
+    const added=pick.map(o=>{const it={id:uidGen(),key:null,kind:"banchan",name:cleanName(o.name),cat:"banchan",bought:date,expires:addDays(date,keepDays),store:"냉장",slot:o.badge==="상"?"상시":o.k,src:`${M.vendor||"반찬"} ${md(date)} ${o.badge==="상"?"상시":o.k}`};state.items.push(it);return it.id});
     menus.orders[date]=[...new Set([...(menus.orders[date]||[]),...pick.map(o=>o.k)])];
     menuSel=new Set();persistMenus();commit();
     toast(`반찬 ${added.length}개를 냉장고에 넣었어요`,()=>{state.items=state.items.filter(i=>!added.includes(i.id));if(before)menus.orders[date]=before;else delete menus.orders[date];persistMenus();commit()});
@@ -768,6 +860,72 @@ JSON만 답하세요:
   if(tab==="add"&&addMode==="menu")renderMenu();
 }
 
+// ---------- kid ----------
+const ALLERGENS=[["egg","계란",/계란|달걀|메추리알|오므라이스|마요|타르타르|지단/],["milk","우유",/우유|크림|치즈|버터|리조또|요거트/],["nut","견과",/견과|호두|땅콩|아몬드|잣|캐슈/],["shrimp","새우",/새우/],["shell","오징어·조개",/오징어|조개|바지락|굴(?!림)|전복|홍합/],["fish","생선",/생선|고등어|연어|대구|명태|동태|갈치|어묵/],["wheat","밀",/까스|만두|파스타|짜장|탕수육|빵|부침|우동|카레/],["soy","대두",/두부|된장|유부|콩(?!나물)|간장/]];
+function kid(){if(!state.kid||typeof state.kid!=="object")state.kid={name:"",allergies:[],hideAllergy:false};if(!Array.isArray(state.kid.allergies))state.kid.allergies=[];return state.kid}
+function kidLog(){if(!Array.isArray(state.kidLog))state.kidLog=[];return state.kidLog}
+function allergyHits(name){const a=new Set(kid().allergies);const hits=ALLERGENS.filter(([k,,re])=>a.has(k)&&re.test(name)).map(x=>x[1]);if(!hits.length&&hasStar(name)&&(a.has("egg")||a.has("nut")))hits.push("★ 계란·견과");return hits}
+function tasteOf(name){const n=cleanName(name);const l=kidLog().filter(x=>x.name===n);if(!l.length)return null;return {n:l.length,avg:l.reduce((s,x)=>s+x.r,0)/l.length}}
+const slotOf=it=>it.slot||((it.src||"").split(" ").pop());
+const SLOT_NAME={A:"고기해물",B:"야채견과",C:"국",D:"볶음밥",E:"덮밥소스"};
+const RATE_TXT=["안 먹었어요","조금 먹었어요","잘 먹었어요"];
+function rateBanchan(id,r){
+  const idx=state.items.findIndex(i=>i.id===id);if(idx<0)return;
+  const snap=JSON.parse(JSON.stringify(state));const it=state.items[idx];state.items.splice(idx,1);
+  kidLog().push({name:it.name,slot:slotOf(it),date:todayStr(),r});if(state.kidLog.length>500)state.kidLog.splice(0,state.kidLog.length-500);
+  logOut(r===0?"tossed":"eaten");commit();toast(`${it.name} · ${RATE_TXT[r]}`,()=>{state=snap;commit()});
+}
+function renderKid(){
+  const v=$("#v-kid");const K=kid();const who=K.name.trim()||"우리 아이";
+  const fresh=sorted().filter(i=>i.kind==="banchan");
+  const agg={};kidLog().forEach(x=>{const a=agg[x.name]||(agg[x.name]={name:x.name,n:0,s:0});a.n++;a.s+=x.r});
+  const arr=Object.values(agg).map(a=>({...a,avg:a.s/a.n}));
+  const good=arr.filter(a=>a.avg>=1.5).sort((a,b)=>b.n-a.n||b.avg-a.avg).slice(0,6);
+  const bad=arr.filter(a=>a.avg<0.8).sort((a,b)=>b.n-a.n).slice(0,6);
+  const bySlot={};fresh.filter(i=>left(i)>=0).forEach(i=>{const s=slotOf(i);if(SLOT_NAME[s])bySlot[s]=(bySlot[s]||0)+1});
+  const tips=Object.entries(bySlot).filter(([,n])=>n>=2).map(([s,n])=>`${SLOT_NAME[s]}(${s}) 반찬이 ${n}개 남아 있어요. 다음 신청 땐 ${s}는 쉬어도 돼요.`);
+  const nextDay=(()=>{const all=Object.values(menus.months).flatMap(m=>m.days.map(d=>d.date)).filter(d=>d>todayStr()).sort();return all[0]})();
+  let html=`<div class="kidhead"><div class="eyebrow">KID'S FRIDGE</div><h2>${esc(who)}의 반찬</h2></div>
+  <div class="kcard"><div class="field"><label for="kidName">아이 이름(별명)</label><input id="kidName" class="search" type="text" maxlength="12" placeholder="예: 하준이" value="${esc(K.name)}"></div>
+    <div class="field"><span class="lbl">피해야 할 재료</span><div class="chips">${ALLERGENS.map(([k,l])=>`<button class="chip" data-al="${k}" aria-pressed="${K.allergies.includes(k)}">${l}</button>`).join("")}</div>
+    <p class="note" style="margin:0">반찬 신청 화면에서 이 재료가 들어간 것 같은 메뉴에 표시해요. 이름으로 짐작하는 거라 정확한 성분은 업체에 꼭 확인해 주세요.</p></div></div>`;
+  html+=`<div><div class="sec-h"><h2>오늘 먹일 반찬</h2><small>기한 가까운 순</small></div>`;
+  if(!fresh.length)html+=`<div class="empty"><h3>냉장고에 반찬이 없어요</h3><p style="margin:0">담기 → 반찬 신청에서 받은 반찬을 넣어 주세요.</p><button class="btn" id="goMenu">반찬 넣으러 가기</button></div>`;
+  else html+=`<div class="kids">${fresh.map(i=>{const d=left(i),lv=level(d);const hits=allergyHits(i.name);const t=tasteOf(i.name);return `<div class="kcard">
+      <div class="kt"><b>${esc(i.name)}</b><span class="badge ${lv==="over"?"over":lv==="soon"?"soon":""}">${dLabel(d)}</span></div>
+      <div class="meta">${esc(i.src||"반찬")}${t?` · 전에 ${t.avg>=1.5?"잘 먹었어요":t.avg<0.8?"잘 안 먹었어요":"조금 먹었어요"}`:""}</div>
+      ${hits.length?`<div class="warn">알레르기 확인: ${esc(hits.join(", "))}</div>`:""}
+      <div class="rate"><span class="lbl">다 먹었으면</span><button class="btn" data-rate="2" data-id="${i.id}">잘 먹음</button><button class="btn ghost" data-rate="1" data-id="${i.id}">조금</button><button class="btn danger" data-rate="0" data-id="${i.id}">안 먹음</button></div></div>`}).join("")}</div>`;
+  html+=`</div>`;
+  if(tips.length||nextDay)html+=`<div class="kcard tipcard"><div class="eyebrow">다음 신청 팁</div>${nextDay?`<div>다음 배달일은 <b>${dayLabel(nextDay)}</b>이에요.</div>`:""}${tips.map(t=>`<div>${esc(t)}</div>`).join("")}${good.length?`<div>잘 먹는 메뉴가 식단에 있으면 표시해 둘게요.</div>`:""}</div>`;
+  html+=`<div class="two-col"><div><div class="sec-h"><h2>잘 먹는 반찬</h2></div>${good.length?`<div class="chips">${good.map(g=>`<span class="u good">${esc(g.name)} ${g.n}</span>`).join("")}</div>`:`<p class="note">반찬을 다 먹고 ‘잘 먹음’을 누르면 여기 쌓여요.</p>`}</div>
+    <div><div class="sec-h"><h2>잘 안 먹는 반찬</h2></div>${bad.length?`<div class="chips">${bad.map(g=>`<span class="u bad">${esc(g.name)} ${g.n}</span>`).join("")}</div>`:`<p class="note">아직 없어요.</p>`}</div></div>`;
+  v.innerHTML=html;
+  const nm=v.querySelector("#kidName");nm.onchange=()=>{kid().name=nm.value.trim();commit()};
+  v.querySelectorAll("[data-al]").forEach(b=>b.onclick=()=>{const a=kid().allergies;const k=b.dataset.al;const i=a.indexOf(k);i<0?a.push(k):a.splice(i,1);commit()});
+  v.querySelectorAll("[data-rate]").forEach(b=>b.onclick=()=>rateBanchan(b.dataset.id,+b.dataset.rate));
+  const g=v.querySelector("#goMenu");if(g)g.onclick=()=>{addMode="menu";setTab("add")};
+}
+
+
+// ---------- friend faces ----------
+const FACE_COLOR={veg:"#4CB873",fruit:"#FFB4A2",meat:"#FF9D8F",sea:"#7FC8F8",dairy:"#FFE08A",proc:"#F3E9D2",banchan:"#E9C6FF",etc:"#D6DCE8"};
+function faceSVG(it,size){
+  const d=left(it);const c=FACE_COLOR[it.cat]||FACE_COLOR[(ingById(it.key)||{}).cat]||FACE_COLOR.etc;
+  const mouth=d<0?"M24 47 Q33 39 42 47":d<=2?"M25 46 Q33 40 41 46":d<=6?"M26 45 L40 45":"M24 41 Q33 49 42 41";
+  const eyes=d<0?'<path d="M21 28 l7 6 M28 28 l-7 6 M38 28 l7 6 M45 28 l-7 6" stroke="#1E2A4A" stroke-width="2.5" stroke-linecap="round"/>':'<circle cx="25" cy="31" r="3.2" fill="#1E2A4A"/><circle cx="41" cy="31" r="3.2" fill="#1E2A4A"/>';
+  const tear=d>=0&&d<=2?'<path d="M47 33 q3 5 0 8" stroke="#3FA9F5" stroke-width="2.6" fill="none" stroke-linecap="round"/>':"";
+  const blush=d>6?'<circle cx="19" cy="40" r="3" fill="#FF9D8F" opacity=".8"/><circle cx="47" cy="40" r="3" fill="#FF9D8F" opacity=".8"/>':"";
+  return `<svg class="face" width="${size}" height="${size}" viewBox="0 0 66 66" aria-hidden="true"><circle cx="33" cy="33" r="29" fill="${c}" stroke="#1E2A4A" stroke-width="2.5"/>${eyes}${blush}<path d="${mouth}" stroke="#1E2A4A" stroke-width="2.5" fill="none" stroke-linecap="round"/>${tear}</svg>`;
+}
+function sosHTML(){
+  const it=sorted().find(i=>{const d=left(i);return d>=0&&d<=2});if(!it)return "";
+  const d=left(it);const nm=it.name.replace(/\(.*\)/,"");
+  const josa=/[가-힣]$/.test(nm)&&((nm.charCodeAt(nm.length-1)-0xAC00)%28)?"이":"가";
+  const msg=d===0?"오늘까지래요":d===1?"내일이면 상해 버린대요":"이틀 뒤면 위험하대요";
+  return `<div class="sos">${faceSVG(it,74)}<div style="display:grid;min-width:0"><span class="t1">SOS 도착!</span><span class="t2">${esc(nm)}${josa} ${msg}</span><button class="btn" id="sosGo" style="justify-self:start">구출 레시피 보기 →</button></div></div>`;
+}
+
 // ---------- recipes ----------
 function weight(it){const d=left(it),a=age(it);let w=d<=1?10:d===2?7:d===3?5:d<=5?3:d<=7?2:1;if(a>=10)w+=2;else if(a>=5)w+=1;return w}
 function recommend(){
@@ -820,7 +978,7 @@ function renderCook(){
   }
   if(!avail.length){html+=`<div class="empty"><h3>추천할 재료가 없어요</h3><p style="margin:0">재료를 담으면 기한이 가까운 것부터 쓰는 요리를 골라 드려요.</p><button class="btn" id="goAdd">재료 담기</button></div>`}
   else{
-    html+=`<div><div class="sec-h"><h2>지금 바로 만들 수 있어요</h2><small>급한 재료 순</small></div>${full.length?`<div class="cards">${full.slice(0,8).map(cardHTML).join("")}</div>`:`<p class="note">지금 재료만으로 맞는 레시피가 없어요. 아래 ‘하나만 더’나 Claude 추천을 확인해 보세요.</p>`}</div>`;
+    html+=`<div><div class="sec-h"><h2>오늘의 구출 작전</h2><small>급한 친구부터</small></div>${full.length?`<div class="cards">${full.slice(0,8).map(cardHTML).join("")}</div>`:`<p class="note">지금 재료만으로 맞는 레시피가 없어요. 아래 ‘하나만 더’나 Claude 추천을 확인해 보세요.</p>`}</div>`;
     if(near.length)html+=`<div><div class="sec-h"><h2>하나만 더 있으면</h2><small>점선은 사야 할 재료</small></div><div class="cards">${near.map((x,i)=>cardHTML(x,100+i)).join("")}</div></div>`;
     html+=`<p class="note">기본 양념(${PANTRY})은 있다고 보고 추천해요. 기한이 지난 재료는 추천에서 빠져요.</p>`;
   }
@@ -872,7 +1030,7 @@ function openSheet(id){
       <div class="chips"><button class="chip" data-plus="1">+1일</button><button class="chip" data-plus="3">+3일</button><button class="chip" data-plus="7">+7일</button></div>
       <div class="field"><span class="lbl">보관</span><div class="seg">${["냉장","냉동","실온"].map(s=>`<button data-s="${s}" aria-pressed="${draft.store===s}">${s}</button>`).join("")}</div></div>
       <button class="btn" id="save">저장</button>
-      <div class="acts"><button class="btn ghost" id="ate">다 먹었어요</button><button class="btn danger" id="toss">버렸어요</button></div>
+      ${it.kind==="banchan"?`<div class="field"><span class="lbl">다 먹었으면 아이 반응을 골라 주세요</span><div class="rate3"><button class="btn" id="r2">잘 먹었어요</button><button class="btn ghost" id="r1">조금 먹었어요</button><button class="btn danger" id="r0">안 먹었어요</button></div></div>`:`<div class="acts"><button class="btn ghost" id="ate">다 먹었어요</button><button class="btn danger" id="toss">버렸어요</button></div>`}
       <button class="linkbtn" id="del">잘못 넣었어요 (기록 없이 삭제)</button>
     </div></div>`;
     const sync=()=>{draft.name=$("#f-name").value.trim()||it.name;draft.bought=$("#f-b").value||draft.bought;draft.expires=$("#f-e").value||draft.expires};
@@ -884,7 +1042,7 @@ function openSheet(id){
     $("#save").onclick=()=>{sync();Object.assign(it,draft);if(it.kind!=="banchan"&&!(it.key||"").startsWith("c_")){const k=matchKey(it.name);if(k)it.key=k}close();commit();toast("저장했어요")};
     const out=kind=>{const snap=JSON.parse(JSON.stringify(state));state.items=state.items.filter(i=>i.id!==id);if(kind)logOut(kind);close();commit();
       toast(kind==="eaten"?`${it.name} 다 먹음`:kind==="tossed"?`${it.name} 버림`:`${it.name} 삭제`,()=>{state=snap;commit()})};
-    $("#ate").onclick=()=>out("eaten");$("#toss").onclick=()=>out("tossed");$("#del").onclick=()=>out(null);
+    if(it.kind==="banchan")[0,1,2].forEach(r=>{$("#r"+r).onclick=()=>{close();rateBanchan(id,r)}});else{$("#ate").onclick=()=>out("eaten");$("#toss").onclick=()=>out("tossed")}$("#del").onclick=()=>out(null);
   };
   const onKey=e=>{if(e.key==="Escape")close()};
   const close=()=>{root.innerHTML="";document.removeEventListener("keydown",onKey)};
@@ -894,9 +1052,9 @@ function openSheet(id){
 
 // ---------- tabs ----------
 function setTab(t){tab=t;document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===t?"page":"false"));
-  ["fridge","add","cook"].forEach(k=>$("#v-"+k).hidden=k!==t);render();window.scrollTo(0,0)}
+  ["fridge","add","cook","kid"].forEach(k=>$("#v-"+k).hidden=k!==t);render();window.scrollTo(0,0)}
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
-function render(){renderSummary();if(tab==="fridge")renderFridge();if(tab==="add")renderAdd();if(tab==="cook")renderCook()}
+function render(){renderSummary();if(tab==="fridge")renderFridge();if(tab==="add")renderAdd();if(tab==="cook")renderCook();if(tab==="kid")renderKid()}
 render();
 </script>
 
